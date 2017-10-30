@@ -102,6 +102,7 @@ public class ContainersApiApp {
 			HostConfig
 				.builder()
 				.memory(268435456L /* 256Mb */)
+				.memorySwap(268435456L)
 				.build()
 			);
 		System.out.println("\n=== client.updateContainer");
