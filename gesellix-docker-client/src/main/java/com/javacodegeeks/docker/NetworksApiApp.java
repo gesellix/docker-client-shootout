@@ -21,7 +21,7 @@ public class NetworksApiApp {
     // Create the network
     Map<String, Object> networkConfig = new HashMap<>();
     networkConfig.put("Driver", "bridge");
-    final EngineResponse network = (EngineResponse) client.createNetwork("test-network", networkConfig);
+    final EngineResponse network = client.createNetwork("test-network", networkConfig);
     String networkId = (String) ((Map) network.getContent()).get("Id");
     System.out.println("\n=== client.createNetwork");
     System.out.println(network.getContent());

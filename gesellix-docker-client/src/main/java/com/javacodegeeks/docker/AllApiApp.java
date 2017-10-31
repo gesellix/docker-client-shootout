@@ -18,6 +18,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.singletonList;
+
 public class AllApiApp {
   private static final Logger LOG = LoggerFactory.getLogger(AllApiApp.class);
 
@@ -26,7 +28,9 @@ public class AllApiApp {
     String host = "localhost";
 
     // Pull the image first
-    client.pull("mysql", "8.0.2");
+//    client.pull("mysql", "8.0.2");
+    client.create(ImmutableMap.of("fromImage", "mysql",
+                                  "tag", "8.0.2"));
 
     // Create container
     EngineResponse container = client.createContainer(ImmutableMap.of(
@@ -38,7 +42,7 @@ public class AllApiApp {
         "ExposedPorts", ImmutableMap.of("3306/tcp", Collections.emptyMap()),
         "HostConfig", ImmutableMap.of(
             "PortBindings", ImmutableMap.of(
-                "3306/tcp", Arrays.asList(ImmutableMap.of(
+                "3306/tcp", singletonList(ImmutableMap.of(
                     "HostIp", "0.0.0.0",
                     "HostPort", "0")
                 ))),
@@ -55,7 +59,7 @@ public class AllApiApp {
     client.startContainer(containerId);
 
     // Inspect the container's health
-    Map info = (Map) ((EngineResponse) client.inspectContainer(containerId)).getContent();
+    Map info = (Map) client.inspectContainer(containerId).getContent();
     String healthStatus = getProperty(info, "State.Health.Status");
     LOG.info("The container {} is {} ...", containerId, healthStatus);
 
@@ -64,7 +68,7 @@ public class AllApiApp {
       Thread.sleep(1000);
 
       // Ask for container status
-      info = (Map) ((EngineResponse) client.inspectContainer(containerId)).getContent();
+      info = (Map) client.inspectContainer(containerId).getContent();
       healthStatus = getProperty(info, "State.Health.Status");
       LOG.info("The container {} is {} ...", containerId, healthStatus);
 

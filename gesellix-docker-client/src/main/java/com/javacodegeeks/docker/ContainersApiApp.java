@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 
+import static java.util.Collections.singletonList;
+
 public class ContainersApiApp {
 
   public static void main(String[] args) {
@@ -25,7 +27,9 @@ public class ContainersApiApp {
     final DockerClient client = new DockerClientImpl();
 
     // Pull the image first
-    client.pull("mysql", "8.0.2");
+//    client.pull("mysql", "8.0.2");
+    client.create(ImmutableMap.of("fromImage", "mysql",
+                                  "tag", "8.0.2"));
 
     // Create container
     EngineResponse container = client.createContainer(ImmutableMap.of(
@@ -37,7 +41,7 @@ public class ContainersApiApp {
         "ExposedPorts", ImmutableMap.of("3306/tcp", Collections.emptyMap()),
         "HostConfig", ImmutableMap.of(
             "PortBindings", ImmutableMap.of(
-                "3306/tcp", Arrays.asList(ImmutableMap.of(
+                "3306/tcp", singletonList(ImmutableMap.of(
                     "HostIp", "0.0.0.0",
                     "HostPort", "3306")
                 )))
@@ -51,7 +55,7 @@ public class ContainersApiApp {
     client.startContainer(containerId);
 
     // Inspect the container
-    final EngineResponse info = (EngineResponse) client.inspectContainer(containerId);
+    final EngineResponse info = client.inspectContainer(containerId);
     System.out.println("\n=== client.inspectContainer");
     System.out.println(info.getContent());
 
@@ -93,18 +97,17 @@ public class ContainersApiApp {
     Map updateConfig = ImmutableMap.of(
         "Memory", 314572800,
         "MemorySwap", 514288000);
-    final EngineResponse update = (EngineResponse) client.updateContainer(containerId,
-                                                                          updateConfig);
+    final EngineResponse update = client.updateContainer(containerId, updateConfig);
     System.out.println("\n=== client.updateContainer");
     System.out.println(update.getContent());
 
     // Get processes in the container
-    final EngineResponse top = (EngineResponse) client.top(containerId);
+    final EngineResponse top = client.top(containerId);
     System.out.println("\n=== client.topContainer");
     System.out.println(top.getContent());
 
     // Get the container statistics
-    final EngineResponse stats = (EngineResponse) client.stats(containerId);
+    final EngineResponse stats = client.stats(containerId);
     System.out.println("\n=== client.stats");
     System.out.println(stats.getContent());
 
@@ -113,7 +116,7 @@ public class ContainersApiApp {
     logConfig.put("stdout", true);
     logConfig.put("stderr", true);
     logConfig.put("tail", 10);
-    EngineResponse logs = (EngineResponse) client.logs(containerId, logConfig, new DockerAsyncCallback() {
+    EngineResponse logs = client.logs(containerId, logConfig, new DockerAsyncCallback() {
       @Override
       public Object onEvent(Object event) {
         System.out.println(event);

@@ -57,7 +57,7 @@ public class ImagesApiApp {
     System.out.println(removedImages.getContent());
   }
 
-  InputStream newBuildContext(File baseDirectory) {
+  private InputStream newBuildContext(File baseDirectory) {
     try {
       File buildContext = File.createTempFile("buildContext", ".tar");
       buildContext.deleteOnExit();

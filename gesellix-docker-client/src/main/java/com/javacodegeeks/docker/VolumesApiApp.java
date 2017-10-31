@@ -16,17 +16,17 @@ public class VolumesApiApp {
     final DockerClient client = new DockerClientImpl();
 
     // Create the volume
-    final EngineResponse volume = (EngineResponse) client.createVolume(new SingletonMap("Name", null));
+    final EngineResponse volume = client.createVolume(new SingletonMap("Name", null));
     System.out.println("\n=== client.createVolume");
     System.out.println(volume.getContent());
 
     // Inspect the volume
-    final EngineResponse info = (EngineResponse) client.inspectVolume(((Map) volume.getContent()).get("Name"));
+    final EngineResponse info = client.inspectVolume(((Map) volume.getContent()).get("Name"));
     System.out.println("\n=== client.inspectVolume");
     System.out.println(info.getContent());
 
     // List all volumes
-    final EngineResponse volumes = (EngineResponse) client.volumes();
+    final EngineResponse volumes = client.volumes();
     System.out.println("\n=== client.listVolumes");
     System.out.println(volumes.getContent());
 
