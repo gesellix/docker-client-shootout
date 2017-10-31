@@ -69,7 +69,7 @@ public class AllApiApp {
       LOG.info("The container {} is {} ...", containerId, healthStatus);
 
       // Along with health, better to check the container status as well
-      if (healthStatus.equalsIgnoreCase("exited")) {
+      if (((String) getProperty(info, "State.Status")).equalsIgnoreCase("exited")) {
         LOG.info("The container {} has exited unexpectedly ...", containerId);
         break;
       }
