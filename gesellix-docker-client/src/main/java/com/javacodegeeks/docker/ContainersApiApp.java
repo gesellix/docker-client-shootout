@@ -6,6 +6,7 @@ import de.gesellix.docker.client.DockerClient;
 import de.gesellix.docker.client.DockerClientImpl;
 import de.gesellix.docker.engine.AttachConfig;
 import de.gesellix.docker.engine.EngineResponse;
+import de.gesellix.docker.engine.OkResponseCallback;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -13,7 +14,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
 
 import static java.util.Collections.singletonList;
 
@@ -70,22 +70,12 @@ public class ContainersApiApp {
     System.out.println(ports);
 
     // Attach to container
-    AttachConfig attachConfig = new AttachConfig();
-    AttachConfig.Streams streams = new AttachConfig.Streams();
-    streams.setStdout(System.out);
-    streams.setStderr(System.err);
-    attachConfig.setStreams(streams);
-    ForkJoinPool.commonPool().submit(
-        () -> {
-          client.attach(containerId,
-                        ImmutableMap.of("Stream", 1,
-                                        "Stdin", 1,
-                                        "Stdout", 1,
-                                        "Stderr", 1),
-                        attachConfig);
-          return null;
-        }
-    );
+    EngineResponse attachResponse = client.attach(containerId,
+                                                  ImmutableMap.of("Stream", 1,
+                                                                  "Stdin", 1,
+                                                                  "Stdout", 1,
+                                                                  "Stderr", 1),
+                                                  new AttachConfig());
 
     // Pause the container
     client.pause(containerId);
@@ -94,10 +84,9 @@ public class ContainersApiApp {
     client.unpause(containerId);
 
     // Update container
-    Map updateConfig = ImmutableMap.of(
+    final EngineResponse update = client.updateContainer(containerId, ImmutableMap.of(
         "Memory", 314572800,
-        "MemorySwap", 514288000);
-    final EngineResponse update = client.updateContainer(containerId, updateConfig);
+        "MemorySwap", 514288000));
     System.out.println("\n=== client.updateContainer");
     System.out.println(update.getContent());
 
@@ -131,13 +120,20 @@ public class ContainersApiApp {
 //        .attach(System.out, System.err, false);
 //    System.out.println(IOUtils.copy(new RawInputStream((InputStream) logs.getStream()), System.out));
 
-    // Start the container
+    // Stop the container
     client.stop(containerId);
+    client.wait(containerId);
 
     // Remove container
     client.rm(containerId);
 
-    logs.getTaskFuture().cancel(true);
+    shutdownConnectionPool(attachResponse.getResponseCallback());
+  }
+
+  private static void shutdownConnectionPool(OkResponseCallback responseCallback) {
+    responseCallback.getClient().dispatcher().executorService().shutdown();
+    responseCallback.getClient().connectionPool().evictAll();
+    System.gc();
   }
 
   private static <R> R getProperty(Map map, String name) {
