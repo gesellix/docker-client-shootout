@@ -1,20 +1,16 @@
 package com.javacodegeeks.docker;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports;
-import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.async.ResultCallbackTemplate;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
