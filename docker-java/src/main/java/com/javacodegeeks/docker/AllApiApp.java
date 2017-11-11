@@ -41,6 +41,13 @@ public class AllApiApp {
 
     // Inspect the container's health
     InspectContainerResponse info = client.inspectContainerCmd(container.getId()).exec();
+    if (info.getState().getHealth() == null) {
+      LOG.info("Couldn't determine container.state.health.* for id {}", container.getId());
+      client.stopContainerCmd(container.getId()).exec();
+      client.removeContainerCmd(container.getId()).exec();
+      client.close();
+      return;
+    }
     LOG.info("The container {} is {} ...", container.getId(), info.getState().getHealth().getStatus());
 
     while (info.getState().getHealth().getStatus().equalsIgnoreCase("starting")) {
